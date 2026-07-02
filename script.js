@@ -26,13 +26,21 @@
 
   const STAGE_COUNT = 5;
 
+  /** 難易度ごとのヒント側（左半分）に配置する図形数 */
+  const SHAPE_COUNT_BY_DIFFICULTY = {
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 5,
+    5: 7,
+  };
+
   const STAGES = [
     {
       id: 1,
       title: 'はじめの一歩',
       gridSize: 7,
       palette: ['circle-red'],
-      hint: [{ x: 0, y: 3, shape: 'circle-red' }],
       difficulty: 1,
     },
     {
@@ -40,10 +48,6 @@
       title: 'ふたつ並べよう',
       gridSize: 7,
       palette: ['circle-red', 'square-blue'],
-      hint: [
-        { x: 0, y: 2, shape: 'circle-red' },
-        { x: 1, y: 4, shape: 'square-blue' },
-      ],
       difficulty: 2,
     },
     {
@@ -51,11 +55,6 @@
       title: '色をそろえよう',
       gridSize: 7,
       palette: ['circle-red', 'circle-blue', 'triangle-green'],
-      hint: [
-        { x: 0, y: 1, shape: 'circle-red' },
-        { x: 2, y: 3, shape: 'circle-blue' },
-        { x: 1, y: 5, shape: 'triangle-green' },
-      ],
       difficulty: 3,
     },
     {
@@ -63,13 +62,6 @@
       title: '対称の花',
       gridSize: 7,
       palette: ['circle-red', 'square-blue', 'triangle-green', 'diamond-yellow'],
-      hint: [
-        { x: 0, y: 3, shape: 'circle-red' },
-        { x: 1, y: 2, shape: 'square-blue' },
-        { x: 2, y: 3, shape: 'triangle-green' },
-        { x: 3, y: 3, shape: 'diamond-yellow' },
-        { x: 1, y: 5, shape: 'circle-red' },
-      ],
       difficulty: 4,
     },
     {
@@ -77,15 +69,6 @@
       title: '究極の対称',
       gridSize: 7,
       palette: ['circle-red', 'square-blue', 'triangle-green', 'diamond-yellow', 'star-red'],
-      hint: [
-        { x: 0, y: 0, shape: 'circle-red' },
-        { x: 1, y: 1, shape: 'square-blue' },
-        { x: 2, y: 2, shape: 'triangle-green' },
-        { x: 0, y: 6, shape: 'diamond-yellow' },
-        { x: 1, y: 5, shape: 'star-red' },
-        { x: 2, y: 4, shape: 'circle-red' },
-        { x: 3, y: 3, shape: 'square-blue' },
-      ],
       difficulty: 5,
     },
   ];
@@ -101,6 +84,7 @@
       playerCells: {},
       wrongCells: [],
       shaking: false,
+      hints: [],
     },
   };
 
@@ -111,6 +95,11 @@
   function parseShapeId(id) {
     const parts = id.split('-');
     return { type: parts[0], color: parts[1] };
+  }
+
+  function isHintSide(x, gridSize) {
+    gridSize = gridSize || GRID_SIZE;
+    return x <= Math.floor(gridSize / 2);
   }
 
   function isPlaySide(x, gridSize) {
@@ -199,6 +188,50 @@
 
   function getStage(id) {
     return STAGES.find(function (s) { return s.id === id; }) || STAGES[0];
+  }
+
+  function getActiveHints() {
+    return state.game.hints || [];
+  }
+
+  function shuffleArray(arr) {
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = tmp;
+    }
+    return copy;
+  }
+
+  function randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function getHintSideCells(gridSize) {
+    gridSize = gridSize || GRID_SIZE;
+    const cells = [];
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x <= Math.floor(gridSize / 2); x++) {
+        cells.push({ x: x, y: y });
+      }
+    }
+    return cells;
+  }
+
+  function generateRandomHints(stage) {
+    const gridSize = stage.gridSize || GRID_SIZE;
+    const count = SHAPE_COUNT_BY_DIFFICULTY[stage.difficulty] || stage.difficulty;
+    const positions = shuffleArray(getHintSideCells(gridSize)).slice(0, count);
+
+    return positions.map(function (pos) {
+      return {
+        x: pos.x,
+        y: pos.y,
+        shape: randomPick(stage.palette),
+      };
+    });
   }
 
   function getAudioContext() {
@@ -389,7 +422,7 @@
             renderDifficultyStars(stage.difficulty) +
           '</header>' +
           (tutorial ? '<p class="tutorial">' + tutorial + '</p>' : '') +
-          renderBoard(stage.hint, state.game.playerCells, state.game.wrongCells, {
+          renderBoard(getActiveHints(), state.game.playerCells, state.game.wrongCells, {
             shaking: state.game.shaking,
             onCellClick: true,
           }) +
@@ -443,18 +476,20 @@
     );
   }
 
-  function resetGameState(stage) {
+  function resetGameState(stage, hints) {
     state.game = {
       selectedShape: stage.palette[0] || null,
       playerCells: {},
       wrongCells: [],
       shaking: false,
+      hints: hints || state.game.hints || [],
     };
   }
 
   function startStage(stageId) {
     state.activeStageId = stageId;
-    resetGameState(getStage(stageId));
+    const stage = getStage(stageId);
+    resetGameState(stage, generateRandomHints(stage));
     state.screen = 'game';
     render();
   }
@@ -556,9 +591,10 @@
 
   function handleSubmit() {
     const stage = getStage(state.activeStageId);
-    const wrong = getWrongCells(stage.hint, state.game.playerCells, stage.gridSize);
+    const hints = getActiveHints();
+    const wrong = getWrongCells(hints, state.game.playerCells, stage.gridSize);
 
-    if (checkSymmetry(stage.hint, state.game.playerCells, stage.gridSize)) {
+    if (checkSymmetry(hints, state.game.playerCells, stage.gridSize)) {
       sound.success();
       handleClear();
     } else {
