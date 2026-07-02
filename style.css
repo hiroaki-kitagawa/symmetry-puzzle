@@ -130,12 +130,93 @@ button {
   background: #0a0e24;
 }
 
-.screen-image {
+.title-bg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   object-fit: cover;
   object-position: center;
-  display: block;
+}
+
+.end-screen .screen-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ゲーム終了画面：中央上部にクリアメッセージ */
+.end-congrats {
+  position: absolute;
+  top: clamp(32px, 10vh, 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  z-index: 2;
+  width: max-content;
+  min-width: min(100%, 360px);
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: clamp(2.625rem, 9.625vw, 3.85rem);
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #fff8e0 0%, #ffd966 40%, #f5a623 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 12px rgba(255, 215, 100, 0.8))
+          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.end-actions {
+  bottom: clamp(16px, 5vh, 40px);
+}
+
+/* タイトル画面：中央下部にタイトル文字とボタンを重ねる */
+.title-overlay {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(32px, 10vh, 80px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: min(400px, 90vw);
+  z-index: 2;
+}
+
+.game-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow:
+    0 0 12px rgba(94, 234, 212, 0.8),
+    0 0 24px rgba(139, 124, 240, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, #ffffff 0%, #b8f0ff 50%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .screen-actions {
@@ -148,10 +229,6 @@ button {
   gap: 10px;
   width: min(340px, 86vw);
   z-index: 2;
-}
-
-.title-actions {
-  bottom: clamp(20px, 6vh, 48px);
 }
 
 .end-actions {
@@ -179,20 +256,22 @@ button {
 }
 
 .btn-continue {
-  padding: 10px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  width: 100%;
+  padding: 14px 32px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
   border-radius: 999px;
-  background: rgba(10, 14, 36, 0.45);
+  background: rgba(10, 14, 36, 0.55);
   color: #e0f7fa;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.15s;
 }
 
 .btn-continue:hover {
-  background: rgba(10, 14, 36, 0.65);
+  background: rgba(10, 14, 36, 0.75);
+  transform: translateY(-1px);
 }
 
 .btn-end {
@@ -401,14 +480,16 @@ button {
 .stage-select-screen {
   min-height: 100vh;
   padding: 16px;
-  max-width: 480px;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stage-select-panel {
+  width: min(720px, 94vw);
   background: rgba(255, 255, 255, 0.9);
   border-radius: 16px;
-  padding: 16px;
+  padding: 24px 20px;
   box-shadow: 0 4px 32px rgba(0, 60, 80, 0.2);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -418,7 +499,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .stage-select-header h1 {
@@ -430,28 +511,29 @@ button {
 .stage-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  gap: 16px;
 }
 
 .stage-btn {
   aspect-ratio: 1;
+  min-height: 100px;
   border: 2px solid #b8e0e8;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   position: relative;
   cursor: pointer;
   transition: transform 0.15s, border-color 0.15s;
-  padding: 6px 4px;
+  padding: 12px 8px;
 }
 
 .stage-btn .stars {
-  font-size: 0.55rem;
-  letter-spacing: 0;
+  font-size: 1rem;
+  letter-spacing: 1px;
   line-height: 1;
 }
 
@@ -472,24 +554,24 @@ button {
 }
 
 .stage-btn .number {
-  font-size: 1.1rem;
+  font-size: 2.2rem;
   font-weight: 700;
   color: #4a3f8c;
 }
 
 .stage-btn .check {
   position: absolute;
-  top: 4px;
-  right: 6px;
-  font-size: 0.7rem;
+  top: 8px;
+  right: 10px;
+  font-size: 1rem;
   color: #4ade80;
   font-weight: 700;
 }
 
 .stage-btn .lock {
   position: absolute;
-  font-size: 0.8rem;
-  bottom: 4px;
+  font-size: 1.2rem;
+  bottom: 8px;
 }
 
 /* --- Clear Screen --- */
@@ -582,14 +664,47 @@ button {
   50% { transform: scale(1.1); }
 }
 
-@media (max-width: 480px) {
-  .screen-image {
-    object-fit: contain;
-    background: #0a0e24;
+@media (max-width: 600px) {
+  .title-overlay {
+    bottom: clamp(20px, 6vh, 48px);
+    gap: 16px;
   }
 
-  .title-actions {
-    bottom: clamp(12px, 4vh, 32px);
+  .game-title {
+    font-size: clamp(1.2rem, 6vw, 1.6rem);
+  }
+
+  .stage-select-panel {
+    padding: 20px 16px;
+  }
+
+  .stage-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stage-btn {
+    min-height: 100px;
+    padding: 12px 8px;
+    border-radius: 14px;
+  }
+
+  .stage-btn .number {
+    font-size: 2rem;
+  }
+
+  .stage-btn .stars {
+    font-size: 0.9rem;
+  }
+
+  .end-congrats {
+    top: clamp(20px, 6vh, 48px);
+    width: max-content;
+    min-width: calc(100vw - 32px);
+    padding: 0 16px;
+    font-size: clamp(2.01rem, 8.4vw, 3.06rem);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
   .end-actions {

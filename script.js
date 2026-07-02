@@ -417,17 +417,16 @@
   }
 
   /** タイトル画面の HTML を生成 */
-  function renderTitleScreen() {    let extra = '';
-    if (hasProgress()) {
-      extra = '<button type="button" class="btn-continue" data-action="continue">つづきから</button>';
-    }
-
+  function renderTitleScreen() {
     return (
       '<div class="title-screen">' +
-        '<img src="' + IMG.title + '" alt="シンメトリー図形パズル — 美しい対称性を創り出せ！" class="screen-image">' +
-        '<div class="screen-actions title-actions">' +
-          '<button type="button" class="btn-start" data-action="stageSelect">ゲームをスタート</button>' +
-          extra +
+        '<img src="' + IMG.title + '" alt="" class="screen-image title-bg" aria-hidden="true">' +
+        '<div class="title-overlay">' +
+          '<h1 class="game-title">シンメトリー図形パズル</h1>' +
+          '<div class="title-actions">' +
+            '<button type="button" class="btn-start" data-action="stageSelect">ゲームをスタート</button>' +
+            '<button type="button" class="btn-continue" data-action="continue">つづきから</button>' +
+          '</div>' +
         '</div>' +
       '</div>'
     );
@@ -453,7 +452,8 @@
         '</button>';
     });
 
-    return (      '<div class="stage-select-screen">' +
+    return (
+      '<div class="stage-select-screen">' +
         '<div class="stage-select-panel">' +
           '<header class="stage-select-header">' +
             '<button type="button" class="btn-back" data-action="title">← 戻る</button>' +
@@ -466,7 +466,8 @@
   }
 
   /** ゲームプレイ画面の HTML を生成（ボード・パレット・アクションボタン） */
-  function renderGameScreen() {    const stage = getStage(state.activeStageId);
+  function renderGameScreen() {
+    const stage = getStage(state.activeStageId);
     const tutorial = TUTORIAL_MESSAGES[stage.id];
     let palette = '';
 
@@ -505,9 +506,11 @@
   }
 
   /** 全ステージクリア後のゲーム終了画面の HTML を生成 */
-  function renderEndScreen() {    return (
+  function renderEndScreen() {
+    return (
       '<div class="end-screen">' +
-        '<img src="' + IMG.end + '" alt="お疲れさまでした！ゲームを完了しました！" class="screen-image">' +
+        '<img src="' + IMG.end + '" alt="" class="screen-image" aria-hidden="true">' +
+        '<h1 class="end-congrats">クリアおめでとう！</h1>' +
         '<div class="screen-actions end-actions">' +
           '<button type="button" class="btn-end" data-action="title">タイトルに戻る</button>' +
         '</div>' +
